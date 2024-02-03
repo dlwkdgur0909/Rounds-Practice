@@ -13,7 +13,6 @@ public class Bullet : MonoBehaviour
 
     private void Update()
     {
-        transform.position += new Vector3(bulletSpeed * Time.deltaTime, 0, 0);
         Destroy(gameObject, 2f);
     }
 

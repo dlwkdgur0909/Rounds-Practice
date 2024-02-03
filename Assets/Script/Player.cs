@@ -5,6 +5,7 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     Rigidbody2D rigid;
+    [SerializeField] SpriteRenderer rend;
 
 
     [Header("Player")]
@@ -13,8 +14,8 @@ public class Player : MonoBehaviour
     public int jumpCount = 0;
 
     [Header("Bullet")]
-    [SerializeField] GameObject bulletPos;
-    [SerializeField] GameObject bullet;
+    public GameObject bulletPos;
+    public GameObject prefabBullet;
     public float bulletSpeed;
     Vector3 dir;
     Camera cam;
@@ -30,6 +31,7 @@ public class Player : MonoBehaviour
         Move();
         Jump();
         Fire();
+        dir = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y, -cam.transform.position.z));
     }
 
     public void Move()
@@ -37,11 +39,13 @@ public class Player : MonoBehaviour
         if (Input.GetKey(KeyCode.A))
         {
             rigid.velocity = new Vector2(-1 * moveSpeed, rigid.velocity.y);
+            rend.flipX = true;
         }
 
         if (Input.GetKey(KeyCode.D))
         {
             rigid.velocity = new Vector2(1 * moveSpeed, rigid.velocity.y);
+            rend.flipX = false;
         }
     }
 
@@ -56,12 +60,15 @@ public class Player : MonoBehaviour
 
     public void Fire()
     {
+
         if (Input.GetMouseButtonDown(0))
         {
-            Instantiate(bullet);
+            GameObject bullet = Instantiate(prefabBullet);
             bullet.transform.position = bulletPos.transform.position;
-            bullet.gameObject.GetComponent<Rigidbody2D>().AddForce(dir * bulletSpeed, ForceMode2D.Impulse);
-            //Instantiate(bullet, bulletPos.transform.position, transform.rotation);
+            Vector3 bulletToMouse = dir - bullet.transform.position;
+            float angle = Mathf.Atan2(bulletToMouse.y, bulletToMouse.x) * Mathf.Rad2Deg;
+            bullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+            bullet.GetComponent<Rigidbody2D>().AddForce(bulletToMouse.normalized * bulletSpeed, ForceMode2D.Impulse);
         }
     }
 
