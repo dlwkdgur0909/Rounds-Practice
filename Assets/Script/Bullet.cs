@@ -4,23 +4,30 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    public float bulletSpeed;
+    public float speed = 5.0f;
 
-    public void Start()
+    public void OnEnable()
     {
-
+        StopAllCoroutines();
+        StartCoroutine(Wait(10f));
     }
 
-    private void Update()
+    void Update()
     {
-        Destroy(gameObject, 2f);
+        transform.Translate(Vector3.right * speed * Time.deltaTime);
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    IEnumerator Wait(float time)
     {
-        if (collision.gameObject.CompareTag("Enemy"))
+        yield return new WaitForSeconds(time);
+        ObjectPoolManager.ReturnToPool("Bullet", gameObject);
+    }
+
+    public void OnCollisionEnter2D(Collision2D coll)
+    {
+        if (coll.gameObject.CompareTag("Ground") || coll.gameObject.CompareTag("Enemy"))
         {
-            Destroy(gameObject);
+            ObjectPoolManager.ReturnToPool("Bullet", gameObject);
         }
     }
 }

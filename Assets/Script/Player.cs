@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    //public static Player Instance;
     Rigidbody2D rigid;
     [SerializeField] SpriteRenderer rend;
 
@@ -14,11 +16,12 @@ public class Player : MonoBehaviour
     public int jumpCount = 0;
 
     [Header("Bullet")]
-    public GameObject bulletPos;
-    public GameObject prefabBullet;
+    public Transform bulletPos;
+    public GameObject bulletPrefabs;
     public float bulletSpeed;
     Vector3 dir;
     Camera cam;
+
 
     void Start()
     {
@@ -31,7 +34,7 @@ public class Player : MonoBehaviour
         Move();
         Jump();
         Fire();
-        dir = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x,Input.mousePosition.y, -cam.transform.position.z));
+        dir = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cam.transform.position.z));
     }
 
     public void Move()
@@ -60,17 +63,12 @@ public class Player : MonoBehaviour
 
     public void Fire()
     {
-
         if (Input.GetMouseButtonDown(0))
         {
-            GameObject bullet = Instantiate(prefabBullet);
-            bullet.transform.position = bulletPos.transform.position;
-            Vector3 bulletToMouse = dir - bullet.transform.position;
-            float angle = Mathf.Atan2(bulletToMouse.y, bulletToMouse.x) * Mathf.Rad2Deg;
-            bullet.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
-            bullet.GetComponent<Rigidbody2D>().AddForce(bulletToMouse.normalized * bulletSpeed, ForceMode2D.Impulse);
+            ObjectPoolManager.SpawnFromPool("Bullet", bulletPos.position, transform);
         }
     }
+
 
     void OnCollisionEnter2D(Collision2D coll)
     {
